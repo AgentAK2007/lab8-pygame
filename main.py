@@ -4,18 +4,30 @@ import pygame
 
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-SQUARE_SIZE = 30
-SQUARE_COUNT = 10
+MIN_SQUARE_SIZE = 8
+MAX_SQUARE_SIZE = 24
+MAX_SPEED = 5
+SQUARE_COUNT = 100
 BACKGROUND_COLOR = (20, 20, 30)
 FPS = 60
 
 
+def random_non_zero_velocity(max_speed: float) -> float:
+	velocity = 0
+	while velocity == 0:
+		velocity = random.randint(-int(max_speed), int(max_speed))
+	return velocity
+
+
 class MovingSquare:
 	def __init__(self) -> None:
-		self.x = random.randint(0, WINDOW_WIDTH - SQUARE_SIZE)
-		self.y = random.randint(0, WINDOW_HEIGHT - SQUARE_SIZE)
-		self.vx = random.choice([-3, -2, -1, 1, 2, 3])
-		self.vy = random.choice([-3, -2, -1, 1, 2, 3])
+		self.size = random.randint(MIN_SQUARE_SIZE, MAX_SQUARE_SIZE)
+		# Bigger squares move slower: max_speed inversely proportional to size
+		self.max_speed = MAX_SPEED * (MIN_SQUARE_SIZE / self.size)
+		self.x = random.randint(0, WINDOW_WIDTH - self.size)
+		self.y = random.randint(0, WINDOW_HEIGHT - self.size)
+		self.vx = random_non_zero_velocity(self.max_speed)
+		self.vy = random_non_zero_velocity(self.max_speed)
 		self.color = (
 			random.randint(60, 255),
 			random.randint(60, 255),
@@ -28,22 +40,22 @@ class MovingSquare:
 			self.vx += random.choice([-1, 1])
 			self.vy += random.choice([-1, 1])
 
-		self.vx = max(-4, min(4, self.vx))
-		self.vy = max(-4, min(4, self.vy))
+		self.vx = max(-self.max_speed, min(self.max_speed, self.vx))
+		self.vy = max(-self.max_speed, min(self.max_speed, self.vy))
 
 		self.x += self.vx
 		self.y += self.vy
 
-		if self.x <= 0 or self.x >= WINDOW_WIDTH - SQUARE_SIZE:
+		if self.x <= 0 or self.x >= WINDOW_WIDTH - self.size:
 			self.vx *= -1
-			self.x = max(0, min(self.x, WINDOW_WIDTH - SQUARE_SIZE))
+			self.x = max(0, min(self.x, WINDOW_WIDTH - self.size))
 
-		if self.y <= 0 or self.y >= WINDOW_HEIGHT - SQUARE_SIZE:
+		if self.y <= 0 or self.y >= WINDOW_HEIGHT - self.size:
 			self.vy *= -1
-			self.y = max(0, min(self.y, WINDOW_HEIGHT - SQUARE_SIZE))
+			self.y = max(0, min(self.y, WINDOW_HEIGHT - self.size))
 
 	def draw(self, surface: pygame.Surface) -> None:
-		pygame.draw.rect(surface, self.color, (self.x, self.y, SQUARE_SIZE, SQUARE_SIZE))
+		pygame.draw.rect(surface, self.color, (self.x, self.y, self.size, self.size))
 
 
 def main() -> None:
