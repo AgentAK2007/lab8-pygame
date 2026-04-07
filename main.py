@@ -1,89 +1,107 @@
 import random
 import pygame
 
-
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-MIN_SQUARE_SIZE = 8
-MAX_SQUARE_SIZE = 24
-MAX_SPEED = 5
-SQUARE_COUNT = 100
+MIN_SQUARE_SIZE = 15
+MAX_SQUARE_SIZE = 50
+BASE_SPEED = 120  #Used to calculate speed based on size
+SQUARE_COUNT = 20
 BACKGROUND_COLOR = (20, 20, 30)
 FPS = 60
 
 
-def random_non_zero_velocity(max_speed: float) -> float:
-	velocity = 0
-	while velocity == 0:
-		velocity = random.randint(-int(max_speed), int(max_speed))
-	return velocity
-
-
 class MovingSquare:
-	def __init__(self) -> None:
-		self.size = random.randint(MIN_SQUARE_SIZE, MAX_SQUARE_SIZE)
-		# Bigger squares move slower: max_speed inversely proportional to size
-		self.max_speed = MAX_SPEED * (MIN_SQUARE_SIZE / self.size)
-		self.x = random.randint(0, WINDOW_WIDTH - self.size)
-		self.y = random.randint(0, WINDOW_HEIGHT - self.size)
-		self.vx = random_non_zero_velocity(self.max_speed)
-		self.vy = random_non_zero_velocity(self.max_speed)
-		self.color = (
-			random.randint(60, 255),
-			random.randint(60, 255),
-			random.randint(60, 255),
-		)
+    def __init__(self) -> None:
+        #Random sizes for the square
+        self.size = random.randint(MIN_SQUARE_SIZE, MAX_SQUARE_SIZE)
+        
+        #Speed as a function of size (the bigger the square, the slower the speed)
+        speed_magnitude = BASE_SPEED / self.size 
+        
+        self.x = random.randint(0, WINDOW_WIDTH - self.size)
+        self.y = random.randint(0, WINDOW_HEIGHT - self.size)
+        
+        #Give it a random starting direction using the calculated speed
+        self.vx = random.choice([-1, 1]) * speed_magnitude
+        self.vy = random.choice([-1, 1]) * speed_magnitude
+        
+        self.color = (
+            random.randint(60, 255),
+            random.randint(60, 255),
+            random.randint(60, 255),
+        )
+        
+        #Setup for the rotation jitter effect
+        self.angle = 0
+        self.rotation_speed = 0
+        
+        #Create a base surface for this square to handle the rotation graphics
+        self.base_image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
+        self.base_image.fill(self.color)
 
-	def update(self) -> None:
-		# Add slight random jitter so movement feels less uniform.
-		if random.random() < 0.05:
-			self.vx += random.choice([-1, 1])
-			self.vy += random.choice([-1, 1])
+    def update(self) -> None:
+        #The jitter effect: slight random changes to rotation speed instead of modifying x,y
+        if random.random() < 0.10: 
+            self.rotation_speed += random.choice([-2, 2])
+            
+        #Constrain the rotation speed so it doesn't spin out of control 
+        self.rotation_speed = max(-6, min(6, self.rotation_speed))
+        self.angle = (self.angle + self.rotation_speed) % 360
 
-		self.vx = max(-self.max_speed, min(self.max_speed, self.vx))
-		self.vy = max(-self.max_speed, min(self.max_speed, self.vy))
+        #Standard movement
+        self.x += self.vx
+        self.y += self.vy
 
-		self.x += self.vx
-		self.y += self.vy
+        #Bounce movement
+        if self.x <= 0 or self.x >= WINDOW_WIDTH - self.size:
+            self.vx *= -1
+            self.x = max(0, min(self.x, WINDOW_WIDTH - self.size))
 
-		if self.x <= 0 or self.x >= WINDOW_WIDTH - self.size:
-			self.vx *= -1
-			self.x = max(0, min(self.x, WINDOW_WIDTH - self.size))
+        if self.y <= 0 or self.y >= WINDOW_HEIGHT - self.size:
+            self.vy *= -1
+            self.y = max(0, min(self.y, WINDOW_HEIGHT - self.size))
 
-		if self.y <= 0 or self.y >= WINDOW_HEIGHT - self.size:
-			self.vy *= -1
-			self.y = max(0, min(self.y, WINDOW_HEIGHT - self.size))
-
-	def draw(self, surface: pygame.Surface) -> None:
-		pygame.draw.rect(surface, self.color, (self.x, self.y, self.size, self.size))
-
+    def draw(self, surface: pygame.Surface) -> None:
+        #Rotate the original surface
+        rotated_image = pygame.transform.rotate(self.base_image, self.angle)
+        
+        #Re-center the rotated image so it doesn't drift
+        center_x = self.x + self.size / 2
+        center_y = self.y + self.size / 2
+        new_rect = rotated_image.get_rect(center=(center_x, center_y))
+        
+        surface.blit(rotated_image, new_rect.topleft)
 
 def main() -> None:
-	pygame.init()
-	screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-	pygame.display.set_caption("Random Moving Squares")
-	clock = pygame.time.Clock()
+    pygame.init()
+    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    pygame.display.set_caption("Random Moving Squares with Rotation")
+    clock = pygame.time.Clock()
+    fps_font = pygame.font.SysFont(None, 28)
 
-	squares = [MovingSquare() for _ in range(SQUARE_COUNT)]
+    squares = [MovingSquare() for _ in range(SQUARE_COUNT)]
 
-	running = True
-	while running:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				running = False
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-		for square in squares:
-			square.update()
+        for square in squares:
+            square.update()
 
-		screen.fill(BACKGROUND_COLOR)
-		for square in squares:
-			square.draw(screen)
+        screen.fill(BACKGROUND_COLOR)
+        for square in squares:
+            square.draw(screen)
 
-		pygame.display.flip()
-		clock.tick(FPS)
+        fps_surface = fps_font.render(f"FPS: {clock.get_fps():.1f}", True, (240, 240, 240))
+        screen.blit(fps_surface, (10, 10))
 
-	pygame.quit()
+        pygame.display.flip()
+        clock.tick(FPS)
 
+    pygame.quit()
 
 if __name__ == "__main__":
-	main()
+    main()
