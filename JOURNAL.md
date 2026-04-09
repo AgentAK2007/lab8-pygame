@@ -24,3 +24,8 @@
 - **Hook Version**: 1.02
 - **Date**: 09-04-2026 22:17
 - **Prompt**: I got a TypeError: unsupported operand type(s) for |: 'str' and 'NoneType' on my type hint. Why does the bitwise OR operator (|) work for type hinting normally, but crash when used with a string literal?
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 09-04-2026 22:18
+- **Prompt**: activate the journal logger and take add the interactions that haven't been logged in prompts_history.md and JOURNAL.md
