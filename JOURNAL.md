@@ -7,8 +7,8 @@
 
 ### **New Interaction**
 - **Hook Version**: 1.02
-- **Date**: 07-04-2026 11:14
-- **Prompt**: activate the journal logger
+- **Date**: 07-04-2026 11:14activate the journal logger
+- **Prompt**: 
 
 ### **New Interaction**
 - **Hook Version**: 1.02
@@ -29,3 +29,8 @@
 - **Hook Version**: 1.02
 - **Date**: 09-04-2026 22:18
 - **Prompt**: activate the journal logger and take add the interactions that haven't been logged in prompts_history.md and JOURNAL.md
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 09-04-2026 22:26
+- **Prompt**: Add comments explaining the code as documentation
