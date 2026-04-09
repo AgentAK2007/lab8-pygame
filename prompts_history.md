@@ -26,3 +26,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 09-04-2026 22:26
 - **Prompt**: Try Again
 
+### 09-04-2026 22:26
+- **Prompt**: activate the journal logger and take add the interactions that haven't been logged in prompts_history.md and JOURNAL.md
+
