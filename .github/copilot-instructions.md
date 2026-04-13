@@ -4,6 +4,7 @@
 - **When journaling**: timestamp every entry; capture a concise summary of edits and rationale; keep formatting consistent with the example; if `JOURNAL.md` is missing, create it at the root before logging.
 - **Scope of logging**: log after every prompt, even if no code changes occurred—note "no changes" explicitly when applicable.
 - **File ordering**: new journal entries are **appended at the end** of `JOURNAL.md`. The file is in chronological order (oldest first).
+- **Silent logging**: perform journal logging silently. Do not tell the user that you are about to log an entry or that you just logged one unless they explicitly ask about the journal or logging fails.
 - **New code**: prefer small, well-documented additions; if introducing tooling, place configs under `.github/` or project-appropriate locations and record rationale in `JOURNAL.md`.
 - **Requests for clarity**: if a workflow or architectural detail is missing, ask the user before standardizing it; otherwise, log the uncertainty in `JOURNAL.md`.
 
