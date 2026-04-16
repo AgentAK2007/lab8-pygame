@@ -34,6 +34,11 @@ class MovingSquare:
             random.randint(60, 255),
         )
         
+        # Lifecycle Properties
+        self.age = 0.0
+        self.lifespan = random.uniform(30.0, 180.0) 
+        self.is_dead = False
+        
         # Rotation state is independent of movement state.
         self.angle = 0.0
         self.rotation_speed = 0.0
@@ -58,7 +63,8 @@ class MovingSquare:
         min_distance = float('inf')
 
         for other in squares:
-            if other is self:
+            # Skip self and dead squares that haven't been cleaned up yet
+            if other is self or other.is_dead:
                 continue
             
             # Only care about strictly larger squares.
@@ -121,6 +127,12 @@ class MovingSquare:
 
     def update(self, squares: list['MovingSquare'], dt: float) -> None:
         """Update steering and position using time-based motion."""
+        # NEW: Aging Logic
+        self.age += dt
+        if self.age >= self.lifespan:
+            self.is_dead = True
+            return  # Stop moving if dead
+            
         # Update steering state before applying movement.
         self.apply_flee_and_jitter(squares)
 
@@ -151,7 +163,7 @@ def main() -> None:
     """Initialize pygame, run the main loop, and render simulation + FPS overlay."""
     pygame.init()
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    pygame.display.set_caption("Random Moving Squares with Rotation")
+    pygame.display.set_caption("Random Moving Squares with Lifecycle")
     clock = pygame.time.Clock()
     fps_font = pygame.font.SysFont(None, 28)
 
@@ -169,6 +181,11 @@ def main() -> None:
         for square in squares:
             # Each square needs full group context for flee behavior.
             square.update(squares, dt)
+
+        # Rebirth Logic (Check for dead squares and replace them)
+        for i in range(len(squares)):
+            if squares[i].is_dead:
+                squares[i] = MovingSquare()
 
         screen.fill(BACKGROUND_COLOR)
         for square in squares:

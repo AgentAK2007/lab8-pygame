@@ -67,3 +67,29 @@ Learning check
 - If you can explain why the zero-distance case is dangerous, you understand the hardest edge case.
 - If you can explain why centers are better than top-left corners, you understand the geometry.
 - If you can describe where jitter is added relative to fleeing, you understand the control flow.
+
+
+Life + Span + Rebirth Feature:
+All squares have a randon life span (Between 30 and 180 seconds for example)
+They die at the end of their life.
+Each time a square diies, a new one is created.
+
+Analysis/Strategy
+To implement a lifecycle for the squares, I need to keep track of the time on each individual square.
+
+Every square needs three new properties when its created/bprn: 
+age (starts at 0), 
+lifespan (a random float between 30.0 and 180.0 seconds), 
+and an is_dead boolean flag.
+
+I already calculated delta time in seconds in the main loop, so I can add dt to the square's age every time update() is called.
+
+When age >= lifespan, change is_dead = True.
+
+In the main game loop, after updating all squares, it needs to check the list. If a square is dead, replace it with a new MovingSquare().
+
+Edge Cases to be handled:
+Testing time: 30 to 180 seconds is a very long time to just sit there and wait to see if the code works. I should temporarily change the lifespan to 2 to 5 seconds so I can work faster and know if the rebirth logic is correct instantly.
+
+
+
