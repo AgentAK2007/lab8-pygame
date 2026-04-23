@@ -91,5 +91,10 @@ In the main game loop, after updating all squares, it needs to check the list. I
 Edge Cases to be handled:
 Testing time: 30 to 180 seconds is a very long time to just sit there and wait to see if the code works. I should temporarily change the lifespan to 2 to 5 seconds so I can work faster and know if the rebirth logic is correct instantly.
 
+Analysis/strategy: Chase Feature
 
+Flee feature and Chase feature are opposite so I should just invert the flee feature vectors 
+For Fleeing it finds the larger square, calculate a vector pointing away from it.
+For Chasing it finds a smaller square, calculate a vector pointing toward it.
+and i will keep the random jitter so the movement is still unpredictable.
 
