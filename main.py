@@ -23,9 +23,9 @@ class MovingSquare:
     #Add 'size: int None = None' to for specific sizes
     def __init__(self, size: int | None = None) -> None:
         
-        #1. Use provided size, or choose a random one if none is provided.
+        # 1. Use the provided size, or choose a random one if none is provided.
         if size is not None:
-            self.size = size
+            self.size = int(size) #Force the float back into a whole integer to prevent type error
         else:
             self.size = random.randint(MIN_SQUARE_SIZE, MAX_SQUARE_SIZE)
         
@@ -265,10 +265,21 @@ class MovingSquare:
             
             #only eat squares that are STRICTLY smaller than self
             if self.size > other.size:
-                #Use the function we wrote in Exercise 4 to check for a collision
+                #exercise 4 function to check collision
                 if self.check_collision(other):
                     #Mark the smaller square as dead.
                     other.is_dead = True
+                    
+                    #EXERCISE 6
+                    #Grow proportionally. So i will add 50% of the consumed square's size to self
+                    self.size += (other.size * 0.5)
+                    
+                    #Control the growth. So put a limit/max size at 120 pixels.
+                    self.size = min(self.size, 120.0)
+                    
+                    #Update the visual
+                    self.base_image = pygame.Surface((int(self.size), int(self.size)), pygame.SRCALPHA)
+                    self.base_image.fill(self.color)
 
     # --- DRAW IT TO THE SCREEN ---
     def draw(self, surface: pygame.Surface) -> None:
