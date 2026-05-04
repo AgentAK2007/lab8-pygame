@@ -198,33 +198,6 @@ class MovingSquare:
             self.vx = chase_vx * speed
             self.vy = chase_vy * speed
 
-        # --- AVOID WALLS (MARGIN BOUNCE) ---
-        # Don't wait to hit the wall. Start pushing away when 50 pixels close to it.
-        margin = 50 
-        # turn_factor is how hard the invisible wall pushes back.
-        turn_factor = speed * 0.1 
-
-        # If too close to left wall, push right (positive vx)
-        if self.x < margin:
-            self.vx += turn_factor
-        # If too close to right wall, push left (negative vx)
-        if self.x > WINDOW_WIDTH - self.size - margin:
-            self.vx -= turn_factor
-        # If too close to top wall, push down (positive vy)
-        if self.y < margin:
-            self.vy += turn_factor
-        # If too close to bottom wall, push up (negative vy)
-        if self.y > WINDOW_HEIGHT - self.size - margin:
-            self.vy -= turn_factor
-
-        # Because pushing away from walls adds speed, we might go too fast.
-        # We calculate our current speed...
-        current_speed = math.hypot(self.vx, self.vy)
-        if current_speed > 0:
-            # ...and shrink it back down to our natural max speed (normalization again).
-            self.vx = (self.vx / current_speed) * speed
-            self.vy = (self.vy / current_speed) * speed
-
         # --- RANDOM WIGGLES (JITTER) ---
         # 5% chance every single frame to wiggle slightly off path.
         if random.random() < 0.05:
@@ -259,33 +232,18 @@ class MovingSquare:
         # Call the "Brain" function above to figure out our self.vx and self.vy.
         self.apply_steering_and_jitter(squares)
 
-        # ABSOLUTE WALL BOUNCE (Failsafe in case Margin Bounce fails)
-        # If we hit the absolute left edge (x <= 0) and are moving left (vx < 0)...
-        if self.x <= 0 and self.vx < 0:
-            self.vx = abs(self.vx) # Force velocity positive (move right).
-        # Same for right edge...
-        elif self.x >= WINDOW_WIDTH - self.size and self.vx > 0:
-            self.vx = -abs(self.vx) # Force velocity negative (move left).
-
-        # Same for top edge...
-        if self.y <= 0 and self.vy < 0:
-            self.vy = abs(self.vy)
-        # Same for bottom edge...
-        elif self.y >= WINDOW_HEIGHT - self.size and self.vy > 0:
-            self.vy = -abs(self.vy)
-
         # TIME-BASED INTEGRATION: The most important math!
-        # Distance = Velocity * Time. 
-        # We multiply our speed by 'dt' so movement is smooth regardless of computer lag.
         self.x += self.vx * dt
         self.y += self.vy * dt
-        # Spin the square based on time too.
         self.angle = (self.angle + self.rotation_speed * dt) % 360
 
-        # CLAMPING: Absolutely force the X and Y coordinates to stay inside the window.
-        # min() and max() trap the number so it can never be less than 0 or greater than the width.
-        self.x = max(0, min(self.x, float(WINDOW_WIDTH - self.size)))
-        self.y = max(0, min(self.y, float(WINDOW_HEIGHT - self.size)))
+        #EXERCISE 3
+        #modulo operator so i get the remainder after the division by the screen width/height 
+        #If x goes to 805, 805 % 800 = 5. So its on the left side
+        #If x goes to -5, -5 % 800 = 795. So its on the right side
+        self.x = self.x % WINDOW_WIDTH
+        self.y = self.y % WINDOW_HEIGHT
+
 
     # --- DRAW IT TO THE SCREEN ---
     def draw(self, surface: pygame.Surface) -> None:
