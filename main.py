@@ -351,10 +351,14 @@ def main() -> None:
         # 2. REBIRTH LOGIC
         # Loop through the list of squares by their index number (0, 1, 2, etc.)
         for i in range(len(squares)):
-            # If the square at this spot says it's dead...
+            #IF the square at this spot says it's dead
             if squares[i].is_dead:
-                # Overwrite it completely with a brand new MovingSquare()
-                squares[i] = MovingSquare()
+                #Save its size before it gets overwritten
+                old_size = squares[i].size
+                
+                #Overwrite it completely with a brand new MovingSquare, 
+                #passing in the size that was saved
+                squares[i] = MovingSquare(size=old_size)
 
         # 3. DRAWING
         # Wipe the screen clean with the background color (hides the old frames).
