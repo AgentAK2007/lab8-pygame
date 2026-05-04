@@ -16,6 +16,7 @@ BASE_SPEED = 1000
 SQUARE_COUNT = 30 # We will spawn exactly 30 squares at the start.
 BACKGROUND_COLOR = (20, 20, 30) # A dark blue/grey background color (Red=20, Green=20, Blue=30).
 FPS = 60 # We want the game to try and run at 60 Frames Per Second.
+TRAILS_LENGTH = 30
 
 # --- THE BLUEPRINT FOR A SQUARE ---
 class MovingSquare:
@@ -67,6 +68,9 @@ class MovingSquare:
         self.base_image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
         # Paint that blank image with the random color we chose in step 5.
         self.base_image.fill(self.color)
+
+        # 9. Trail memory
+        self.history = []
 
     # --- HELPER: GET CENTER ---
     def get_center(self) -> tuple[float, float]:
@@ -280,19 +284,46 @@ class MovingSquare:
                     #Update the visual
                     self.base_image = pygame.Surface((int(self.size), int(self.size)), pygame.SRCALPHA)
                     self.base_image.fill(self.color)
+        
+        #EXERCISE 7
+        #Get current center pixel
+        current_center = self.get_center()
+        
+        #Check the square's history/past coordinates for the screen wrappingm by checking the distance to the last recorded position.
+        if len(self.history) > 0:
+            last_pos = self.history[-1]
+            jump_distance = math.hypot(current_center[0] - last_pos[0], current_center[1] - last_pos[1])
+            
+            #If the square moved more than half the screen, I know it wrapped. So remove the trail to prevent messy visual bugs
+            if jump_distance > WINDOW_WIDTH / 2:
+                self.history.clear()
+        
+        #Add current position to the history
+        self.history.append(current_center)
+        
+        #If the list gets too long, pop/remove the oldest position off the front
+        if len(self.history) > TRAILS_LENGTH:
+            self.history.pop(0)
 
     # --- DRAW IT TO THE SCREEN ---
     def draw(self, surface: pygame.Surface) -> None:
         """Stamp the square's image onto the main game window."""
-        # Create a new version of the image that is rotated by 'self.angle'.
+        
+        #EXERCISE 7
+        #to draw the line i need 2 points
+        #I can loop/search through the history/past coordinates and connect point [i-1] to point [i].
+        for i in range(1, len(self.history)):
+            # using pygame.draw.line(surface, color, start_pos, end_pos, width)
+            pygame.draw.line(surface, self.color, self.history[i-1], self.history[i], 2)
+        #Creates a new version of the image that is rotated by 'self.angle'.
         rotated_image = pygame.transform.rotate(self.base_image, self.angle)
-        # Find the center of where the square SHOULD be.
+        #Find the center of where the square SHOULD be.
         center_x = self.x + self.size / 2
         center_y = self.y + self.size / 2
-        # Wrap an invisible box (rect) around the rotated image, and pin it to the exact center.
-        # This stops the square from wobbling off-center when it spins.
+        #Wrap an invisible box rect around the rotated image, and pin it to the exact center.
+        #This stops the square from wobbling off-center when it spins.
         new_rect = rotated_image.get_rect(center=(center_x, center_y))
-        # 'Blit' is Pygame's word for 'stamp'. Stamp the image onto the screen at the calculated position.
+        #Using 'Blit' which is 'stamp' in Pygame. Stamp the image onto the screen at the calculated position.
         surface.blit(rotated_image, new_rect.topleft)
     
 # --- MAIN GAME LOOP ---
