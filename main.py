@@ -12,7 +12,7 @@ WINDOW_HEIGHT = 600 # The screen will be 600 pixels tall.
 MIN_SQUARE_SIZE = 15 # The smallest a square can possibly be.
 MAX_SQUARE_SIZE = 50 # The largest a square can possibly be.
 # BASE_SPEED is a massive number because it's divided by the square's size later to calculate real speed.
-BASE_SPEED = 7200 
+BASE_SPEED = 1000 
 SQUARE_COUNT = 30 # We will spawn exactly 30 squares at the start.
 BACKGROUND_COLOR = (20, 20, 30) # A dark blue/grey background color (Red=20, Green=20, Blue=30).
 FPS = 60 # We want the game to try and run at 60 Frames Per Second.
@@ -192,23 +192,23 @@ class MovingSquare:
         # Recalculate my natural speed based on my size.
         speed = BASE_SPEED / self.size
 
-        # PRIORITY 1: RUN FOR YOUR LIFE
-        # If there is a threat AND it is closer than 150 pixels...
+        # PRIORITY 1: Flee
+        # If there is chasing square that is closer than 150 pixels...
         if threat and self.distance_between_centers(threat) < 150:
-            # Get the direction to run away (length of 1).
             flee_vx, flee_vy = self.compute_flee_vector(threat)
-            # Multiply that direction by our speed to set our new velocity.
-            self.vx = flee_vx * speed
-            self.vy = flee_vy * speed
             
-        # PRIORITY 2: HUNT FOR FOOD
-        # Only happens if Priority 1 didn't trigger. If prey is closer than 200 pixels...
+            # Fleeinh square slower 
+            self.vx = flee_vx * (speed * 0.5)
+            self.vy = flee_vy * (speed * 0.5)
+            
+        # PRIORITY 2:Chase
+        #If Priority 1 didn't trigger. If smaller square closer than 200
         elif prey and self.distance_between_centers(prey) < 200:
-            # Get the direction pointing at the prey.
             chase_vx, chase_vy = self.compute_chase_vector(prey)
-            # Multiply direction by speed.
-            self.vx = chase_vx * speed
-            self.vy = chase_vy * speed
+            
+            #Make the chasing sqaure 2x faster when chasing
+            self.vx = chase_vx * (speed * 2.0)
+            self.vy = chase_vy * (speed * 2.0)
 
         # --- RANDOM WIGGLES (JITTER) ---
         # 5% chance every single frame to wiggle slightly off path.
@@ -256,6 +256,19 @@ class MovingSquare:
         self.x = self.x % WINDOW_WIDTH
         self.y = self.y % WINDOW_HEIGHT
 
+        #EXERCISE 5
+        #Looks through every square 
+        for other in squares:
+            #Skip self and squares that are already dead
+            if other is self or other.is_dead or self.is_dead:
+                continue
+            
+            #only eat squares that are STRICTLY smaller than self
+            if self.size > other.size:
+                #Use the function we wrote in Exercise 4 to check for a collision
+                if self.check_collision(other):
+                    #Mark the smaller square as dead.
+                    other.is_dead = True
 
     # --- DRAW IT TO THE SCREEN ---
     def draw(self, surface: pygame.Surface) -> None:
@@ -270,7 +283,7 @@ class MovingSquare:
         new_rect = rotated_image.get_rect(center=(center_x, center_y))
         # 'Blit' is Pygame's word for 'stamp'. Stamp the image onto the screen at the calculated position.
         surface.blit(rotated_image, new_rect.topleft)
-
+    
 # --- MAIN GAME LOOP ---
 def main() -> None:
     # Turn on the Pygame engine.
