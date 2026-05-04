@@ -84,6 +84,18 @@ class MovingSquare:
         cx2, cy2 = other.get_center()
         # math.hypot does the Pythagorean theorem (a^2 + b^2 = c^2) to find the direct line distance.
         return math.hypot(cx1 - cx2, cy1 - cy2)
+    
+    #EXERCISE 4
+    def check_collision(self, other: 'MovingSquare') -> bool:
+        #Returns True if this square is colliding with the other square.
+        #Create an invisible Pygame rectangle for this square
+        my_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+        
+        #Creates an invisible Pygame rectangle for the other square
+        other_rect = pygame.Rect(other.x, other.y, other.size, other.size)
+        
+        #Pygame's collision 
+        return my_rect.colliderect(other_rect)
 
     # --- HELPER: FIND THREAT ---
     def find_nearest_larger_square(self, squares: list['MovingSquare']) -> 'MovingSquare | None':
