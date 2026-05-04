@@ -30,8 +30,18 @@ All Mermaid diagrams in the generated HTML must follow these rules.
 
 ### Labels
 - ASCII-only, 2–5 words. No parentheses, angle brackets, HTML tags, or slashes.
-- Participant aliases: single-word → unquoted; multi-word → double-quoted (`participant p2 as "square self"`).
+- **Always use double quotes for all Mermaid display labels**, including single-word labels.
+- For flowchart/graph nodes, use bracket labels with double quotes: `n1["game loop"]`.
+- For sequence participants, always quote aliases: `participant p2 as "square self"` and `participant p1 as "game"`.
+- For edge labels, quote text inside pipes when used: `n1 -->|"calls"| n2`.
 - Move detailed wording to HTML captions outside the diagram.
+- Do not use escaped quotes inside Mermaid labels. If a quote is needed in text, rephrase the label.
+
+Examples:
+- Preferred: `n1["update phase"] --> n2["render pass"]`
+- Preferred: `participant p1 as "game"`
+- Reject: `n1[update phase] --> n2[render pass]`
+- Reject: `participant p1 as game`
 
 ### Storage & Rendering
 - Store sources in JS `diagrams` map with `String.raw` template literals. **Never** in HTML `data-*` attributes.
@@ -40,8 +50,10 @@ All Mermaid diagrams in the generated HTML must follow these rules.
 
 ### Preflight (before saving)
 - Verify all IDs are opaque and not in the forbidden lists above.
-- Reject: escaped quotes in sources, `click href` in `data-*` attributes, unquoted multi-word sequence aliases.
-- Validate participant aliases **line-by-line** (not multiline regex). Single-word aliases are valid unquoted.
+- Reject: escaped quotes in sources, `click href` in `data-*` attributes, and any unquoted display labels.
+- Validate labels and participant aliases **line-by-line** (not multiline regex).
+- Reject if any node label appears as `id[label text]` where `label text` is not wrapped in double quotes.
+- Reject if any sequence alias appears as `participant <id> as <alias>` without double quotes around `<alias>`.
 - If a block can't be made safe after simplification, omit it and explain the concept in prose.
 
 ## Workflow

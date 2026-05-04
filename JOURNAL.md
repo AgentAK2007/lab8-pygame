@@ -80,3 +80,28 @@
 - **Socratic Mode**: ON
 - **Changes Made**: Rebuilt docs/code_explorer.html as a fresh self-contained code explorer for main.py, updated the analysis tabs for the current chase/flee simulation, refreshed diagrams, and logged the interaction.
 - **Context and Reasons for Changes**: The previous generated page was stale and partially corrupted during patching, so I recreated the site cleanly to match the current source and preserve a usable learning dashboard.
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 27-04-2026 14:33
+- **User**: arkar.thurein@epita.fr
+- **Prompt**: activate the architecture-graphs.agent.md file
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Loaded and validated .github/agents/architecture-graphs.agent.md for immediate use and confirmed its frontmatter/tool configuration is ready.
+- **Context and Reasons for Changes**: The user requested activation of the architecture graphs custom agent, so I initialized it by reading and validating the file instead of modifying project code.
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 27-04-2026 14:44
+- **User**: arkar.thurein@epita.fr
+- **Prompt**: run it now to generate:
+
+docs/architecture.md
+docs/architecture.html
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Generated docs/architecture.md and docs/architecture.html with dependency graph, runtime flow graph, function call graph, and primary execution sequence diagram from main.py.
+- **Context and Reasons for Changes**: The user asked to run the activated architecture agent immediately, so I produced both requested documentation outputs and validated the HTML render.

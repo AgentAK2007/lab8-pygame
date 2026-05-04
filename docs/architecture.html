@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture - lab8-pygame</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #111827;
+      --surface2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    header {
+      padding: 1.2rem 1.5rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: var(--accent);
+    }
+    header p {
+      margin: 0.2rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.25rem;
+      display: grid;
+      gap: 1rem;
+    }
+    section {
+      background: rgba(17, 24, 39, 0.82);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      backdrop-filter: blur(3px);
+    }
+    h2 {
+      margin: 0 0 0.6rem;
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+    p, li { color: var(--text); }
+    .muted { color: var(--muted); }
+    .diagram {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem;
+      overflow-x: auto;
+    }
+    code {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.08rem 0.3rem;
+      color: #67e8f9;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>lab8-pygame Architecture</h1>
+    <p>Generated from <code>main.py</code> with Mermaid dependency, flow, call, and sequence diagrams.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Scope</h2>
+      <ul>
+        <li>Entry point: <code>main()</code></li>
+        <li>Runtime model: pygame frame loop + list of <code>MovingSquare</code> objects</li>
+        <li>Dependencies: <code>pygame</code>, <code>random</code>, <code>math</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Dependency Graph</h2>
+      <div class="diagram mermaid">
+flowchart LR
+  subgraph "Project Module"
+    p0["main.py"]
+  end
+
+  subgraph "External Dependencies"
+    p1["pygame"]
+    p2["random"]
+    p3["math"]
+  end
+
+  p0 -->|"import"| p1
+  p0 -->|"import"| p2
+  p0 -->|"import"| p3
+      </div>
+    </section>
+
+    <section>
+      <h2>High-Level Runtime Flow</h2>
+      <div class="diagram mermaid">
+flowchart TD
+  n0["Program Start"] --> n1["Enter main()"]
+  n1 --> n2["Initialize pygame display and clock"]
+  n2 --> n3["Create squares list"]
+  n3 --> n4["Begin frame loop"]
+
+  n4 --> n5["Compute dt from clock.tick(FPS)"]
+  n5 --> n6["Read events"]
+  n6 --> n7["Update each square"]
+  n7 --> n8["Replace dead squares"]
+  n8 --> n9["Clear screen and draw squares"]
+  n9 --> n10["Draw FPS text"]
+  n10 --> n11["Flip display"]
+  n11 --> n4
+
+  n6 --> n12["QUIT event"]
+  n12 --> n13["Set running to False"]
+  n13 --> n14["Exit loop"]
+  n14 --> n15["Call pygame.quit()"]
+      </div>
+    </section>
+
+    <section>
+      <h2>Function-Level Call Graph</h2>
+      <div class="diagram mermaid">
+flowchart TD
+  c0["main"] --> c1["MovingSquare.__init__"]
+  c0 --> c2["MovingSquare.update"]
+  c0 --> c3["MovingSquare.draw"]
+
+  c2 --> c4["MovingSquare.apply_steering_and_jitter"]
+  c4 --> c5["MovingSquare.find_nearest_larger_square"]
+  c4 --> c6["MovingSquare.find_nearest_smaller_square"]
+  c4 --> c7["MovingSquare.distance_between_centers"]
+  c4 --> c8["MovingSquare.compute_flee_vector"]
+  c4 --> c9["MovingSquare.compute_chase_vector"]
+
+  c5 --> c7
+  c6 --> c7
+  c7 --> c10["MovingSquare.get_center"]
+  c8 --> c10
+  c9 --> c10
+      </div>
+    </section>
+
+    <section>
+      <h2>Primary Execution Sequence</h2>
+      <div class="diagram mermaid">
+sequenceDiagram
+  participant R as "Python Runtime"
+  participant M as "main()"
+  participant C as "pygame.time.Clock"
+  participant E as "pygame.event"
+  participant S as "MovingSquare"
+  participant D as "pygame.display"
+
+  R->>M: "Invoke main()"
+  M->>D: "set_mode and set_caption"
+  M->>C: "Create clock"
+  M->>S: "Create initial squares"
+
+  loop "Each frame while running"
+    M->>C: "tick(FPS)"
+    C-->>M: "Return dt"
+
+    M->>E: "get()"
+    E-->>M: "Return events"
+
+    alt "Event type is QUIT"
+      M->>M: "Set running = False"
+    else "No QUIT event"
+      loop "For each square"
+        M->>S: "update(squares, dt)"
+        S->>S: "apply_steering_and_jitter(squares)"
+        S->>S: "find nearest larger and smaller"
+        S->>S: "compute flee or chase vector"
+        S->>S: "integrate x, y, angle"
+        S->>S: "check lifespan and bounds"
+      end
+
+      loop "For each index"
+        M->>M: "Replace dead square with new MovingSquare()"
+      end
+
+      loop "For each square"
+        M->>S: "draw(surface)"
+      end
+
+      M->>D: "flip()"
+    end
+  end
+
+  M->>D: "quit()"
+      </div>
+    </section>
+
+    <section>
+      <h2>Assumptions</h2>
+      <p class="muted">No additional Python modules were found in this project root, so architecture coverage is based entirely on <code>main.py</code>.</p>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "dark",
+      securityLevel: "loose"
+    });
+  </script>
+</body>
+</html>

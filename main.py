@@ -8,7 +8,7 @@ WINDOW_HEIGHT = 600
 MIN_SQUARE_SIZE = 15
 MAX_SQUARE_SIZE = 50
 BASE_SPEED = 7200 
-SQUARE_COUNT = 20
+SQUARE_COUNT = 30
 BACKGROUND_COLOR = (20, 20, 30)
 FPS = 60
 
@@ -120,30 +120,52 @@ class MovingSquare:
         return (dx / distance, dy / distance)
 
     def apply_steering_and_jitter(self, squares: list['MovingSquare']) -> None:
-        """Steer away from larger squares, chase smaller ones, and keep random motion jitter."""
+        """Steer away from larger squares, chase smaller ones, avoid walls, and keep random motion jitter."""
         threat = self.find_nearest_larger_square(squares)
         prey = self.find_nearest_smaller_square(squares)
         
-        # Flee if a chasing square is close
+        # Base speed based on size
+        speed = BASE_SPEED / self.size
+
+        # Priority 1: Self Preservation (Flee if a threat is close)
         if threat and self.distance_between_centers(threat) < 150:
             flee_vx, flee_vy = self.compute_flee_vector(threat)
-            escape_speed = BASE_SPEED / self.size
-            self.vx = flee_vx * escape_speed
-            self.vy = flee_vy * escape_speed
+            self.vx = flee_vx * speed
+            self.vy = flee_vy * speed
             
-        # Hunt feature  Chase if prey is in range and not being chased
+        # Priority 2: Hunt (Chase if prey is in range and no immediate threat exists)
         elif prey and self.distance_between_centers(prey) < 200:
             chase_vx, chase_vy = self.compute_chase_vector(prey)
-            chase_speed = BASE_SPEED / self.size
-            self.vx = chase_vx * chase_speed
-            self.vy = chase_vy * chase_speed
+            self.vx = chase_vx * speed
+            self.vy = chase_vy * speed
+
+        # --- NEW: Margin Bounce Logic ---
+        margin = 50 # Distance from the edge where the bounce starts
+        turn_factor = speed * 0.1 # How strongly it steers away from the wall
+
+        if self.x < margin:
+            self.vx += turn_factor
+        if self.x > WINDOW_WIDTH - self.size - margin:
+            self.vx -= turn_factor
+        if self.y < margin:
+            self.vy += turn_factor
+        if self.y > WINDOW_HEIGHT - self.size - margin:
+            self.vy -= turn_factor
+
+        # Normalize the velocity after the margin bounce so they don't speed up infinitely
+        current_speed = math.hypot(self.vx, self.vy)
+        if current_speed > 0:
+            self.vx = (self.vx / current_speed) * speed
+            self.vy = (self.vy / current_speed) * speed
+        # ---------------------------------
 
         # Blend steering with small random changes to avoid straight rigid movement.
         if random.random() < 0.05:
             self.vx += random.choice([-30.0, 30.0])
             self.vy += random.choice([-30.0, 30.0])
             
-            max_speed = BASE_SPEED / self.size
+            # Cap the speed slightly higher than the base speed to allow for the jitter
+            max_speed = speed * 1.2
             self.vx = max(-max_speed, min(max_speed, self.vx))
             self.vy = max(-max_speed, min(max_speed, self.vy))
 
@@ -164,19 +186,25 @@ class MovingSquare:
         # Updates Steering state before applying movement.
         self.apply_steering_and_jitter(squares)
 
+        # WALL OVERRIDE: If touching a wall and trying to move into it, force the velocity away from the wall
+        if self.x <= 0 and self.vx < 0:
+            self.vx = abs(self.vx)
+        elif self.x >= WINDOW_WIDTH - self.size and self.vx > 0:
+            self.vx = -abs(self.vx)
+
+        if self.y <= 0 and self.vy < 0:
+            self.vy = abs(self.vy)
+        elif self.y >= WINDOW_HEIGHT - self.size and self.vy > 0:
+            self.vy = -abs(self.vy)
+
         # Time-based integration
         self.x += self.vx * dt
         self.y += self.vy * dt
         self.angle = (self.angle + self.rotation_speed * dt) % 360
 
-        # Bounce off the games boundarys.
-        if self.x <= 0 or self.x >= WINDOW_WIDTH - self.size:
-            self.vx *= -1
-            self.x = max(0, min(self.x, float(WINDOW_WIDTH - self.size)))
-
-        if self.y <= 0 or self.y >= WINDOW_HEIGHT - self.size:
-            self.vy *= -1
-            self.y = max(0, min(self.y, float(WINDOW_HEIGHT - self.size)))
+        # Strictly clamp position to the game's boundaries so they never slip out
+        self.x = max(0, min(self.x, float(WINDOW_WIDTH - self.size)))
+        self.y = max(0, min(self.y, float(WINDOW_HEIGHT - self.size)))
 
     def draw(self, surface: pygame.Surface) -> None:
         """Draw the square as a rotated sprite centered on its current position."""
